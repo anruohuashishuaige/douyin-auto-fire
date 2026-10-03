@@ -305,8 +305,11 @@ _GROUP_COUNT_SUFFIX_RE_TEMPLATE = r"{name}\s*[\(（]\s*\d+\s*[\)）]"
 
 
 def _group_count_suffix_matches(actual: str, expected: str) -> bool:
-    actual = actual.strip()
-    expected = expected.strip()
+    # Douyin highlights search matches using NBSP, while the same group title
+    # uses ordinary spaces elsewhere. Preserve full-name identity after this
+    # presentation-only normalization; never accept a prefix or substring.
+    actual = actual.replace("\u00a0", " ").strip()
+    expected = expected.replace("\u00a0", " ").strip()
     if actual == expected:
         return True
     pattern = _GROUP_COUNT_SUFFIX_RE_TEMPLATE.format(name=re.escape(expected))
