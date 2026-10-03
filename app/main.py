@@ -8,6 +8,7 @@ import random
 import re
 import hashlib
 import time
+import os
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
@@ -119,6 +120,10 @@ async def run(dry_run: bool = False, env_file: str | None = None) -> int:
                                 # 发送单条消息并计时
                                 msg_start = time.time()
                                 await verify_login(page, timeout_ms=3_000)
+                                if os.getenv('DOUYIN_WINDOW_ENFORCED') == 'true':
+                                    from app.send_window import allowed, now
+                                    if not allowed(now()):
+                                        raise RiskControlError('Sending stopped: Beijing time is outside 11:40–12:00')
                                 await send_message(page, chat, message, task.stickers)
                                 msg_duration = time.time() - msg_start
                                 metrics.record_message_time(msg_duration)
