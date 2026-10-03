@@ -444,6 +444,23 @@ def test_group_count_suffix_matches_escapes_expected_regex_meta() -> None:
     assert not _group_count_suffix_matches("aXb(7)", "a.b")
 
 
+@pytest.mark.asyncio
+async def test_search_result_matches_group_nbsp_without_selecting_prefix_friend() -> None:
+    page, buttons = _search_page(["Group", "Group,\u00a0member(4)"])
+    assert await DouyinChat(page)._search_result("Group, member") is buttons[1]
+
+
+@pytest.mark.asyncio
+async def test_chat_header_accepts_equivalent_group_nbsp() -> None:
+    page = _chat_page("Group,\u00a0member")
+    assert await DouyinChat(page)._chat_open_error("Group, member") is None
+
+
+def test_group_nbsp_matching_keeps_complete_name_check() -> None:
+    assert not _group_count_suffix_matches("Group,\u00a0member2(4)", "Group, member")
+    assert not _group_count_suffix_matches("Group,\u00a0member(extra)", "Group, member")
+
+
 # Suppress the unused `re` import warning the linter may raise for the
 # pure-assertion block above; `re` is intentionally kept as a sanity anchor.
 _ = re
