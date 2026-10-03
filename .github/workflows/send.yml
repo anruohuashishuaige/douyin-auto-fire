@@ -6,11 +6,8 @@ on:
       dry_run:
         description: Only verify login and friends without sending
         type: boolean
-        default: false
-  # 使用 GitHub Actions 的日程时把下面三行注释删掉；用外部 cron 不用管
-  # schedule:
-  #   - cron: "0 0 * * *"
-  #     timezone: "Asia/Shanghai"
+        default: true
+  # Daily schedule enabled after cloud verification
 
 concurrency:
   group: douyin-daily-sender
@@ -19,7 +16,7 @@ concurrency:
 jobs:
   send:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     env:
@@ -114,8 +111,10 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
             python run.py --dry-run
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            python scheduled_run.py
           else
-            python run.py
+            DOUYIN_WINDOW_ENFORCED=true python run.py
           fi
       - name: Upload diagnostics
         if: failure()
